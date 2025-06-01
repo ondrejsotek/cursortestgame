@@ -178,6 +178,7 @@ h1, h2 {
     pointer-events: none;
     z-index: 1000;
     margin-top: 8px;
+    transition: background-color 0.3s ease;
 }
 
 .tooltip::before {
@@ -193,6 +194,11 @@ h1, h2 {
 
 .building:hover .tooltip {
     display: block;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.building:hover .tooltip::before {
+    border-bottom-color: rgba(0, 0, 0, 0.8);
 }
 
 .tooltip h3 {
