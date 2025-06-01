@@ -34,8 +34,7 @@ class Game {
         this.incomeProgress = 0;
         this.multiplier = 1.0;
         this.upgradeTimer = null;
-        this.flowerPositions = [];
-        this.remainingFlowers = 0;
+        this.remainingFlowers = 10; // Fixed number of flowers
         this.isGameOver = false;
         
         this.buildings = [
@@ -55,30 +54,7 @@ class Game {
         ];
 
         this.lastUpdate = Date.now();
-        this.loadFlowerPositions();
-    }
-
-    async loadFlowerPositions() {
-        try {
-            const response = await fetch('images/flower_positions.json');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const positions = await response.json();
-            if (!Array.isArray(positions)) {
-                throw new Error('Invalid flower positions data format');
-            }
-            this.flowerPositions = positions;
-            this.remainingFlowers = this.flowerPositions.length;
-            console.log(`Loaded ${this.remainingFlowers} flower positions`);
-            this.init();
-        } catch (error) {
-            console.error('Error loading flower positions:', error);
-            // Initialize with default values if loading fails
-            this.flowerPositions = [];
-            this.remainingFlowers = 100; // Default number of flowers
-            this.init();
-        }
+        this.init();
     }
 
     init() {
@@ -102,10 +78,17 @@ class Game {
         overlay.className = 'flower-overlay';
         townScene.appendChild(overlay);
         
-        // Add visual indicator for remaining flowers
+        // Create flower counter with 10 flower icons
         const flowerCounter = document.createElement('div');
         flowerCounter.className = 'flower-counter';
-        flowerCounter.textContent = `Flowers: ${this.remainingFlowers}`;
+        
+        // Add 10 flower icons
+        for (let i = 0; i < 10; i++) {
+            const flowerIcon = document.createElement('div');
+            flowerIcon.className = 'flower-icon';
+            flowerCounter.appendChild(flowerIcon);
+        }
+        
         overlay.appendChild(flowerCounter);
     }
 
@@ -123,28 +106,41 @@ class Game {
 
             if (canUpgradeAny) {
                 if (this.upgradeTimer === null) {
-                    this.upgradeTimer = setTimeout(() => {
-                        this.removeFlower();
-                        this.upgradeTimer = null;
-                        if (!this.isGameOver) {
-                            checkForUpgrade();
+                    // First create warning state after 2 seconds
+                    setTimeout(() => {
+                        if (this.upgradeTimer === null) { // Check if user hasn't upgraded yet
+                            this.buildings.forEach((building, index) => {
+                                const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
+                                if (buildingElement && this.gold >= building.getCost()) {
+                                    buildingElement.classList.add('warning');
+                                    this.createCountdownBar(buildingElement);
+                                }
+                            });
+                            
+                            // Then start the 5-second timer for flower removal
+                            this.upgradeTimer = setTimeout(() => {
+                                this.removeFlower();
+                                this.upgradeTimer = null;
+                                // Remove all countdown bars
+                                document.querySelectorAll('.countdown-container').forEach(container => {
+                                    container.remove();
+                                });
+                                if (!this.isGameOver) {
+                                    checkForUpgrade();
+                                }
+                            }, 5000); // 5 seconds for flower removal
                         }
-                    }, 5000);
-
-                    // Add warning animation to buildings that can be upgraded
-                    this.buildings.forEach((building, index) => {
-                        const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
-                        if (buildingElement && this.gold >= building.getCost()) {
-                            buildingElement.classList.add('warning');
-                        }
-                    });
+                    }, 2000); // 2 seconds before warning
                 }
             } else if (this.upgradeTimer !== null) {
                 clearTimeout(this.upgradeTimer);
                 this.upgradeTimer = null;
-                // Remove warning animation
+                // Remove warning animation and countdown bars
                 document.querySelectorAll('.building.warning').forEach(el => {
                     el.classList.remove('warning');
+                });
+                document.querySelectorAll('.countdown-container').forEach(container => {
+                    container.remove();
                 });
             }
         };
@@ -153,41 +149,63 @@ class Game {
         setInterval(checkForUpgrade, 1000);
     }
 
+    createCountdownBar(buildingElement) {
+        // Remove existing countdown bar if any
+        const existingContainer = buildingElement.querySelector('.countdown-container');
+        if (existingContainer) {
+            existingContainer.remove();
+        }
+
+        // Create new countdown bar
+        const container = document.createElement('div');
+        container.className = 'countdown-container';
+        
+        const bar = document.createElement('div');
+        bar.className = 'countdown-bar';
+        
+        container.appendChild(bar);
+        buildingElement.appendChild(container);
+
+        // Start the animation
+        setTimeout(() => {
+            container.classList.add('active');
+        }, 10);
+
+        // Remove the bar when animation ends
+        bar.addEventListener('animationend', () => {
+            container.remove();
+        });
+    }
+
     removeFlower() {
         if (this.remainingFlowers <= 0) return;
 
         const overlay = document.querySelector('.flower-overlay');
         if (!overlay) return;
 
-        this.remainingFlowers--;
+        // Get the flower icon that will be lost
+        const flowerCounter = overlay.querySelector('.flower-counter');
+        const flowerIcons = flowerCounter.querySelectorAll('.flower-icon');
+        const flowerToLose = flowerIcons[this.remainingFlowers - 1];
         
-        // Update flower counter
-        const counter = overlay.querySelector('.flower-counter');
-        if (counter) {
-            counter.textContent = `Flowers: ${this.remainingFlowers}`;
-        }
+        // Create withering animation at the flower's position
+        const flowerRect = flowerToLose.getBoundingClientRect();
+        const overlayRect = overlay.getBoundingClientRect();
         
-        // Create withering flower effect
-        let flowerPos;
-        if (this.flowerPositions.length > 0) {
-            flowerPos = this.flowerPositions[this.remainingFlowers];
-        } else {
-            // Generate random position if no predefined positions
-            flowerPos = [
-                Math.random() * overlay.offsetWidth,
-                Math.random() * overlay.offsetHeight
-            ];
-        }
-        
-        const flower = document.createElement('div');
-        flower.className = 'withering-flower';
-        flower.style.left = `${flowerPos[0]}px`;
-        flower.style.top = `${flowerPos[1]}px`;
-        overlay.appendChild(flower);
+        const witheringFlower = document.createElement('div');
+        witheringFlower.className = 'withering-flower';
+        witheringFlower.style.left = `${flowerRect.left - overlayRect.left}px`;
+        witheringFlower.style.top = `${flowerRect.top - overlayRect.top}px`;
+        overlay.appendChild(witheringFlower);
 
-        // Animate and remove
+        // Mark the flower as lost
+        flowerToLose.classList.add('lost');
+
+        this.remainingFlowers--;
+
+        // Animate and remove withering effect
         setTimeout(() => {
-            flower.remove();
+            witheringFlower.remove();
         }, 1000);
 
         if (this.remainingFlowers <= 0) {
@@ -294,15 +312,28 @@ class Game {
             if (buildingElement) {
                 buildingElement.style.animation = 'upgrade-flash 0.5s';
                 buildingElement.classList.remove('warning');
+                
+                // Remove countdown bar if exists
+                const countdownContainer = buildingElement.querySelector('.countdown-container');
+                if (countdownContainer) {
+                    countdownContainer.remove();
+                }
+                
                 setTimeout(() => {
                     buildingElement.style.animation = '';
                 }, 500);
             }
 
-            // Reset upgrade timer
+            // Reset upgrade timer and clear all warnings
             if (this.upgradeTimer !== null) {
                 clearTimeout(this.upgradeTimer);
                 this.upgradeTimer = null;
+                document.querySelectorAll('.building.warning').forEach(el => {
+                    el.classList.remove('warning');
+                });
+                document.querySelectorAll('.countdown-container').forEach(container => {
+                    container.remove();
+                });
             }
             
             this.updateDisplay();
