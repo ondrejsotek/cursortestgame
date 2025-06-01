@@ -58,32 +58,11 @@ class Game {
         this.createShopElements();
         this.updateDisplay();
         
-        document.querySelector('.town-scene').addEventListener('click', (e) => {
-            if (e.target === document.querySelector('.town-scene')) {
-                this.collectGold();
-            }
-        });
-        
         setInterval(() => this.update(), 50);
     }
 
     collectGold() {
-        this.gold += this.clickValue;
-        this.updateDisplay();
-        
-        const floatingNumber = document.createElement('div');
-        floatingNumber.textContent = `+${this.clickValue}`;
-        floatingNumber.style.position = 'absolute';
-        floatingNumber.style.left = event.clientX + 'px';
-        floatingNumber.style.top = event.clientY + 'px';
-        floatingNumber.style.color = '#27ae60';
-        floatingNumber.style.pointerEvents = 'none';
-        floatingNumber.style.animation = 'float-up 1s ease-out';
-        document.body.appendChild(floatingNumber);
-        
-        setTimeout(() => {
-            document.body.removeChild(floatingNumber);
-        }, 1000);
+        // Remove or comment out the unused collectGold method
     }
 
     setupBuildingHandlers() {

@@ -18,17 +18,6 @@ def create_background():
             b = int(220 + (y * 0.5))
         draw.line([(0, y), (255, y)], fill=(r, g, b))
 
-    # Distant castle silhouette
-    castle_color = (100, 110, 130)
-    # Main tower
-    draw.rectangle([(180, 25), (190, 45)], fill=castle_color)
-    draw.polygon([(178, 25), (192, 25), (185, 18)], fill=castle_color)
-    # Side towers
-    draw.rectangle([(175, 30), (180, 42)], fill=castle_color)
-    draw.rectangle([(190, 30), (195, 42)], fill=castle_color)
-    draw.polygon([(173, 30), (182, 30), (177, 25)], fill=castle_color)
-    draw.polygon([(188, 30), (197, 30), (192, 25)], fill=castle_color)
-
     # Rolling hills (Ghibli-style layered)
     # Back hills
     for i, x in enumerate(range(-50, 300, 100)):
