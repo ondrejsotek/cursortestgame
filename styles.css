@@ -117,7 +117,7 @@ h1, h2 {
 
 .farm {
     bottom: 45%;
-    left: 45%;
+    left: 35%;
     background-image: url('images/farm.png');
 }
 
@@ -129,13 +129,13 @@ h1, h2 {
 
 .factory {
     bottom: 45%;
-    right: 35%;
+    right: 45%;
     background-image: url('images/factory.png');
 }
 
 .bank {
     bottom: 45%;
-    left: 60%;
+    left: 67%;
     background-image: url('images/bank.png');
 }
 
