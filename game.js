@@ -36,6 +36,9 @@ class Game {
         this.upgradeTimer = null;
         this.remainingFlowers = 10; // Fixed number of flowers
         this.isGameOver = false;
+        this.isPaused = false;
+        this.updateInterval = null;
+        this.checkUpgradeInterval = null;
         
         this.buildings = [
             new Building('House', 10, 1, 'house'),
@@ -62,8 +65,9 @@ class Game {
         this.createShopElements();
         this.updateDisplay();
         this.createFlowerOverlay();
+        this.createPauseButton();
         
-        setInterval(() => this.update(), 50);
+        this.updateInterval = setInterval(() => this.update(), 50);
         this.startUpgradeCheck();
     }
 
@@ -92,9 +96,80 @@ class Game {
         overlay.appendChild(flowerCounter);
     }
 
+    createPauseButton() {
+        const townScene = document.querySelector('.town-scene');
+        if (!townScene) return;
+
+        // Create pause button
+        const pauseButton = document.createElement('button');
+        pauseButton.className = 'pause-button';
+        pauseButton.innerHTML = '<div class="icon"></div> Pause';
+        pauseButton.addEventListener('click', () => this.togglePause());
+        townScene.appendChild(pauseButton);
+
+        // Create pause overlay
+        const pauseOverlay = document.createElement('div');
+        pauseOverlay.className = 'pause-overlay';
+        
+        const pauseMessage = document.createElement('div');
+        pauseMessage.className = 'pause-message';
+        pauseMessage.textContent = 'Game Paused';
+        
+        pauseOverlay.appendChild(pauseMessage);
+        townScene.appendChild(pauseOverlay);
+    }
+
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        
+        // Update button appearance
+        const pauseButton = document.querySelector('.pause-button');
+        if (pauseButton) {
+            pauseButton.innerHTML = `<div class="icon"></div> ${this.isPaused ? 'Resume' : 'Pause'}`;
+            pauseButton.classList.toggle('paused', this.isPaused);
+        }
+
+        // Show/hide pause overlay
+        const pauseOverlay = document.querySelector('.pause-overlay');
+        if (pauseOverlay) {
+            pauseOverlay.classList.toggle('active', this.isPaused);
+        }
+
+        // Handle timers
+        if (this.isPaused) {
+            // Store the remaining time on the upgrade timer if it exists
+            if (this.upgradeTimer !== null) {
+                const timeLeft = this.upgradeTimer._idleTimeout - (Date.now() - this.upgradeTimer._idleStart);
+                clearTimeout(this.upgradeTimer);
+                this.upgradeTimer = { 
+                    timeLeft: timeLeft,
+                    isPaused: true
+                };
+            }
+            // Clear intervals
+            if (this.checkUpgradeInterval) {
+                clearInterval(this.checkUpgradeInterval);
+            }
+        } else {
+            // Restore the upgrade timer if it was paused
+            if (this.upgradeTimer && this.upgradeTimer.isPaused) {
+                const timeLeft = this.upgradeTimer.timeLeft;
+                this.upgradeTimer = setTimeout(() => {
+                    this.removeFlower();
+                    this.upgradeTimer = null;
+                    if (!this.isGameOver && !this.isPaused) {
+                        this.checkForUpgrade();
+                    }
+                }, timeLeft);
+            }
+            // Restart intervals
+            this.startUpgradeCheck();
+        }
+    }
+
     startUpgradeCheck() {
         const checkForUpgrade = () => {
-            if (this.isGameOver) return;
+            if (this.isGameOver || this.isPaused) return;
 
             let canUpgradeAny = false;
             this.buildings.forEach((building, index) => {
@@ -108,7 +183,7 @@ class Game {
                 if (this.upgradeTimer === null) {
                     // First create warning state after 2 seconds
                     setTimeout(() => {
-                        if (this.upgradeTimer === null) { // Check if user hasn't upgraded yet
+                        if (this.upgradeTimer === null && !this.isPaused) {
                             this.buildings.forEach((building, index) => {
                                 const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
                                 if (buildingElement && this.gold >= building.getCost()) {
@@ -121,21 +196,19 @@ class Game {
                             this.upgradeTimer = setTimeout(() => {
                                 this.removeFlower();
                                 this.upgradeTimer = null;
-                                // Remove all countdown bars
                                 document.querySelectorAll('.countdown-container').forEach(container => {
                                     container.remove();
                                 });
-                                if (!this.isGameOver) {
+                                if (!this.isGameOver && !this.isPaused) {
                                     checkForUpgrade();
                                 }
-                            }, 5000); // 5 seconds for flower removal
+                            }, 5000);
                         }
-                    }, 2000); // 2 seconds before warning
+                    }, 2000);
                 }
-            } else if (this.upgradeTimer !== null) {
+            } else if (this.upgradeTimer !== null && !this.upgradeTimer.isPaused) {
                 clearTimeout(this.upgradeTimer);
                 this.upgradeTimer = null;
-                // Remove warning animation and countdown bars
                 document.querySelectorAll('.building.warning').forEach(el => {
                     el.classList.remove('warning');
                 });
@@ -146,7 +219,7 @@ class Game {
         };
 
         // Start checking
-        setInterval(checkForUpgrade, 1000);
+        this.checkUpgradeInterval = setInterval(checkForUpgrade, 1000);
     }
 
     createCountdownBar(buildingElement) {
@@ -341,6 +414,8 @@ class Game {
     }
 
     update() {
+        if (this.isPaused || this.isGameOver) return;
+
         const currentTime = Date.now();
         const deltaTime = (currentTime - this.lastUpdate) / 1000;
         this.lastUpdate = currentTime;
