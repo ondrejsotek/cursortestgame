@@ -1,8 +1,9 @@
 class Building {
-    constructor(name, baseCost, baseProduction) {
+    constructor(name, baseCost, baseProduction, iconClass) {
         this.name = name;
         this.baseCost = baseCost;
         this.baseProduction = baseProduction;
+        this.iconClass = iconClass;
         this.level = 0;
     }
 
@@ -21,11 +22,11 @@ class Game {
         this.clickValue = 1;
         this.incomeProgress = 0; // Track progress towards next income tick
         this.buildings = [
-            new Building('House', 10, 0.1),
-            new Building('Farm', 50, 0.5),
-            new Building('Mine', 200, 2),
-            new Building('Factory', 1000, 10),
-            new Building('Bank', 5000, 50)
+            new Building('House', 10, 1, 'house'),
+            new Building('Farm', 50, 2, 'farm'),
+            new Building('Mine', 200, 3, 'mine'),
+            new Building('Factory', 1000, 10, 'factory'),
+            new Building('Bank', 5000, 50, 'bank')
         ];
         this.lastUpdate = Date.now();
         this.init();
@@ -71,6 +72,7 @@ class Game {
             const buildingElement = document.createElement('div');
             buildingElement.className = 'building';
             buildingElement.innerHTML = `
+                <div class="building-icon ${building.iconClass}"></div>
                 <h2>${building.name}</h2>
                 <div class="level">Level: <span class="level-value">0</span></div>
                 <div class="production">Production: <span class="production-value">0</span>/s</div>
@@ -80,7 +82,9 @@ class Game {
             buildingElement.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                this.upgradeBuilding(index);
+                if (!buildingElement.classList.contains('disabled')) {
+                    this.upgradeBuilding(index);
+                }
             });
             
             buildingsGrid.appendChild(buildingElement);
@@ -146,9 +150,19 @@ class Game {
         const buildingElements = document.querySelectorAll('.building');
         this.buildings.forEach((building, index) => {
             const element = buildingElements[index];
+            const cost = building.getCost();
+            
+            // Update building information
             element.querySelector('.level-value').textContent = building.level;
             element.querySelector('.production-value').textContent = building.getProduction().toFixed(1);
-            element.querySelector('.cost-value').textContent = building.getCost();
+            element.querySelector('.cost-value').textContent = cost;
+            
+            // Update disabled state
+            if (this.gold < cost) {
+                element.classList.add('disabled');
+            } else {
+                element.classList.remove('disabled');
+            }
         });
     }
 }
