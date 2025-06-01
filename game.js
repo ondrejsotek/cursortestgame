@@ -17,11 +17,12 @@ class Building {
 }
 
 class ShopItem {
-    constructor(name, cost, multiplier, description) {
+    constructor(name, cost, multiplier, description, iconName) {
         this.name = name;
         this.cost = cost;
         this.multiplier = multiplier;
         this.description = description;
+        this.iconName = iconName;
         this.owned = false;
     }
 }
@@ -42,11 +43,11 @@ class Game {
         ];
 
         this.shopItems = [
-            new ShopItem('Basic Tools', 500, 1.5, 'Simple tools to improve production'),
-            new ShopItem('Advanced Machinery', 2000, 2.0, 'Modern machines boost efficiency'),
-            new ShopItem('Automation System', 5000, 3.0, 'Automated processes increase output'),
-            new ShopItem('AI Management', 10000, 4.0, 'AI-driven optimization maximizes production'),
-            new ShopItem('Quantum Enhancement', 50000, 10.0, 'Quantum technology revolutionizes production')
+            new ShopItem('Basic Tools', 500, 1.5, 'Simple tools to improve production', 'basic_tools'),
+            new ShopItem('Advanced Machinery', 2000, 2.0, 'Modern machines boost efficiency', 'advanced_machinery'),
+            new ShopItem('Automation System', 5000, 3.0, 'Automated processes increase output', 'automation'),
+            new ShopItem('AI Management', 10000, 4.0, 'AI-driven optimization maximizes production', 'ai_management'),
+            new ShopItem('Quantum Enhancement', 50000, 10.0, 'Quantum technology revolutionizes production', 'quantum')
         ];
 
         this.lastUpdate = Date.now();
@@ -90,10 +91,13 @@ class Game {
             if (item.owned) itemElement.classList.add('owned');
             
             itemElement.innerHTML = `
-                <h3>${item.name}</h3>
-                <div class="description">${item.description}</div>
-                <div class="effect">Production Multiplier: x${item.multiplier.toFixed(1)}</div>
-                <div class="cost">${item.owned ? 'Owned' : `Cost: ${item.cost} gold`}</div>
+                <img src="images/${item.iconName}.png" class="shop-item-icon" alt="${item.name} icon">
+                <div class="shop-item-content">
+                    <h3>${item.name}</h3>
+                    <div class="description">${item.description}</div>
+                    <div class="effect">Production Multiplier: x${item.multiplier.toFixed(1)}</div>
+                    <div class="cost">${item.owned ? 'Owned' : `Cost: ${item.cost} gold`}</div>
+                </div>
             `;
             
             if (!item.owned) {

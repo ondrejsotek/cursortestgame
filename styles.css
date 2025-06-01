@@ -237,6 +237,24 @@ h1, h2 {
     cursor: pointer;
     transition: transform 0.2s, opacity 0.2s;
     border: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.shop-item-icon {
+    width: 64px;
+    height: 64px;
+    image-rendering: pixelated;
+    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.shop-item.disabled .shop-item-icon {
+    filter: grayscale(100%) drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.shop-item-content {
+    flex: 1;
 }
 
 .shop-item:not(.disabled):hover {
