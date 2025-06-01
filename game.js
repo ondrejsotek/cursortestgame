@@ -34,11 +34,12 @@ class Game {
         this.incomeProgress = 0;
         this.multiplier = 1.0;
         this.upgradeTimer = null;
-        this.remainingFlowers = 10; // Fixed number of flowers
+        this.remainingFlowers = 10;
         this.isGameOver = false;
         this.isPaused = false;
         this.updateInterval = null;
         this.checkUpgradeInterval = null;
+        this.isGameStarted = false;
         
         this.buildings = [
             new Building('House', 10, 1, 'house'),
@@ -57,6 +58,59 @@ class Game {
         ];
 
         this.lastUpdate = Date.now();
+        this.showWelcomePopup();
+    }
+
+    showWelcomePopup() {
+        const overlay = document.createElement('div');
+        overlay.className = 'welcome-overlay';
+        
+        const popup = document.createElement('div');
+        popup.className = 'welcome-popup';
+        
+        // Create flower lives display
+        const flowerLives = document.createElement('div');
+        flowerLives.className = 'flower-lives';
+        for (let i = 0; i < 10; i++) {
+            const flower = document.createElement('div');
+            flower.className = 'flower-icon';
+            flowerLives.appendChild(flower);
+        }
+
+        popup.innerHTML = `
+            <h2>Welcome to the Medieval Clicker Game!</h2>
+            <div class="instructions">
+                <h3>How to Play:</h3>
+                <ul>
+                    <li>Build and upgrade buildings to generate gold income</li>
+                    <li>Each building generates different amounts of gold per second</li>
+                    <li>When you have enough gold to upgrade a building, you have 7 seconds to do so</li>
+                    <li>If you don't upgrade in time, you'll lose a flower</li>
+                    <li>Losing all flowers will end the game</li>
+                    <li>Buy items from the shop to increase your production multiplier</li>
+                    <li>Use the pause button if you need a break</li>
+                </ul>
+            </div>
+            <p>You have 10 flowers to protect:</p>
+        `;
+        
+        popup.appendChild(flowerLives);
+        
+        const startButton = document.createElement('button');
+        startButton.className = 'start-button';
+        startButton.textContent = 'Start Game';
+        startButton.addEventListener('click', () => {
+            overlay.remove();
+            this.startGame();
+        });
+        
+        popup.appendChild(startButton);
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay);
+    }
+
+    startGame() {
+        this.isGameStarted = true;
         this.init();
     }
 
@@ -169,7 +223,7 @@ class Game {
 
     startUpgradeCheck() {
         const checkForUpgrade = () => {
-            if (this.isGameOver || this.isPaused) return;
+            if (this.isGameOver || this.isPaused || !this.isGameStarted) return;
 
             let canUpgradeAny = false;
             this.buildings.forEach((building, index) => {
@@ -414,7 +468,7 @@ class Game {
     }
 
     update() {
-        if (this.isPaused || this.isGameOver) return;
+        if (this.isPaused || this.isGameOver || !this.isGameStarted) return;
 
         const currentTime = Date.now();
         const deltaTime = (currentTime - this.lastUpdate) / 1000;

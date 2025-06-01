@@ -618,4 +618,119 @@ h1, h2 {
     50% {
         transform: translateY(-10px);
     }
+}
+
+.welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.welcome-popup {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    animation: popup-appear 0.5s ease-out;
+}
+
+@keyframes popup-appear {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.welcome-popup h2 {
+    color: #2c3e50;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.welcome-popup .instructions {
+    text-align: left;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    color: #2c3e50;
+}
+
+.welcome-popup .instructions h3 {
+    color: #2c3e50;
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.welcome-popup .instructions ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.welcome-popup .instructions li {
+    margin: 10px 0;
+    padding-left: 24px;
+    position: relative;
+    line-height: 1.5;
+}
+
+.welcome-popup .instructions li::before {
+    content: '•';
+    position: absolute;
+    left: 8px;
+    color: #3498db;
+}
+
+.welcome-popup .start-button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 25px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 20px;
+}
+
+.welcome-popup .start-button:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-popup .start-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.welcome-popup .flower-lives {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+.welcome-popup .flower-lives .flower-icon {
+    width: 24px;
+    height: 24px;
+    background-image: url('images/flower_icon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
 } 
