@@ -1,9 +1,9 @@
 class Building {
-    constructor(name, baseCost, baseProduction, iconClass) {
+    constructor(name, baseCost, baseProduction, type) {
         this.name = name;
         this.baseCost = baseCost;
         this.baseProduction = baseProduction;
-        this.iconClass = iconClass;
+        this.type = type;
         this.level = 0;
     }
 
@@ -54,12 +54,12 @@ class Game {
     }
 
     init() {
-        this.createBuildingElements();
+        this.setupBuildingHandlers();
         this.createShopElements();
         this.updateDisplay();
         
-        document.querySelector('.game-container').addEventListener('click', (e) => {
-            if (e.target === document.querySelector('.game-container')) {
+        document.querySelector('.town-scene').addEventListener('click', (e) => {
+            if (e.target === document.querySelector('.town-scene')) {
                 this.collectGold();
             }
         });
@@ -86,30 +86,18 @@ class Game {
         }, 1000);
     }
 
-    createBuildingElements() {
-        const buildingsGrid = document.querySelector('.buildings-grid');
-        buildingsGrid.innerHTML = '';
-        
+    setupBuildingHandlers() {
         this.buildings.forEach((building, index) => {
-            const buildingElement = document.createElement('div');
-            buildingElement.className = 'building';
-            buildingElement.innerHTML = `
-                <div class="building-icon ${building.iconClass}"></div>
-                <h2>${building.name}</h2>
-                <div class="level">Level: <span class="level-value">0</span></div>
-                <div class="production">Production: <span class="production-value">0</span>/s</div>
-                <div class="cost">Cost: <span class="cost-value">${building.getCost()}</span> gold</div>
-            `;
-            
-            buildingElement.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!buildingElement.classList.contains('disabled')) {
-                    this.upgradeBuilding(index);
-                }
-            });
-            
-            buildingsGrid.appendChild(buildingElement);
+            const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
+            if (buildingElement) {
+                buildingElement.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!buildingElement.classList.contains('disabled')) {
+                        this.upgradeBuilding(index);
+                    }
+                });
+            }
         });
     }
 
@@ -166,11 +154,13 @@ class Game {
             this.gold -= cost;
             building.level++;
             
-            const buildingElement = document.querySelectorAll('.building')[index];
-            buildingElement.style.animation = 'upgrade-flash 0.5s';
-            setTimeout(() => {
-                buildingElement.style.animation = '';
-            }, 500);
+            const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
+            if (buildingElement) {
+                buildingElement.style.animation = 'upgrade-flash 0.5s';
+                setTimeout(() => {
+                    buildingElement.style.animation = '';
+                }, 500);
+            }
             
             this.updateDisplay();
         }
@@ -206,19 +196,22 @@ class Game {
             progressBar.style.width = `${this.incomeProgress}%`;
         }
 
-        const buildingElements = document.querySelectorAll('.building');
+        // Update building tooltips and states
         this.buildings.forEach((building, index) => {
-            const element = buildingElements[index];
-            const cost = building.getCost();
-            
-            element.querySelector('.level-value').textContent = building.level;
-            element.querySelector('.production-value').textContent = building.getProduction(this.multiplier).toFixed(1);
-            element.querySelector('.cost-value').textContent = cost;
-            
-            if (this.gold < cost) {
-                element.classList.add('disabled');
-            } else {
-                element.classList.remove('disabled');
+            const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
+            if (buildingElement) {
+                const cost = building.getCost();
+                
+                buildingElement.querySelector('.level-value').textContent = building.level;
+                buildingElement.querySelector('.production-value').textContent = 
+                    building.getProduction(this.multiplier).toFixed(1);
+                buildingElement.querySelector('.cost-value').textContent = cost;
+                
+                if (this.gold < cost) {
+                    buildingElement.classList.add('disabled');
+                } else {
+                    buildingElement.classList.remove('disabled');
+                }
             }
         });
 

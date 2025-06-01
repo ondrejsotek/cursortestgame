@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Building Clicker Game</title>
+    <title>Retro Town Clicker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="game-container">
         <header>
-            <h1>Building Clicker</h1>
+            <h1>Retro Town Clicker</h1>
             <div class="resources">
                 <div class="gold">Gold: <span id="gold">0</span></div>
                 <div class="income">Income per second: <span id="income">0</span></div>
@@ -21,8 +21,50 @@
         </header>
 
         <div class="game-sections">
-            <main class="buildings-grid">
-                <!-- Buildings will be dynamically added here -->
+            <main class="town-view">
+                <div class="town-scene">
+                    <!-- Buildings will be positioned absolutely within this container -->
+                    <div class="building house" data-type="house">
+                        <div class="tooltip">
+                            <h3>House</h3>
+                            <div class="level">Level: <span class="level-value">0</span></div>
+                            <div class="production">Production: <span class="production-value">0</span>/s</div>
+                            <div class="cost">Cost: <span class="cost-value">10</span> gold</div>
+                        </div>
+                    </div>
+                    <div class="building farm" data-type="farm">
+                        <div class="tooltip">
+                            <h3>Farm</h3>
+                            <div class="level">Level: <span class="level-value">0</span></div>
+                            <div class="production">Production: <span class="production-value">0</span>/s</div>
+                            <div class="cost">Cost: <span class="cost-value">50</span> gold</div>
+                        </div>
+                    </div>
+                    <div class="building mine" data-type="mine">
+                        <div class="tooltip">
+                            <h3>Mine</h3>
+                            <div class="level">Level: <span class="level-value">0</span></div>
+                            <div class="production">Production: <span class="production-value">0</span>/s</div>
+                            <div class="cost">Cost: <span class="cost-value">200</span> gold</div>
+                        </div>
+                    </div>
+                    <div class="building factory" data-type="factory">
+                        <div class="tooltip">
+                            <h3>Factory</h3>
+                            <div class="level">Level: <span class="level-value">0</span></div>
+                            <div class="production">Production: <span class="production-value">0</span>/s</div>
+                            <div class="cost">Cost: <span class="cost-value">1000</span> gold</div>
+                        </div>
+                    </div>
+                    <div class="building bank" data-type="bank">
+                        <div class="tooltip">
+                            <h3>Bank</h3>
+                            <div class="level">Level: <span class="level-value">0</span></div>
+                            <div class="production">Production: <span class="production-value">0</span>/s</div>
+                            <div class="cost">Cost: <span class="cost-value">5000</span> gold</div>
+                        </div>
+                    </div>
+                </div>
             </main>
 
             <aside class="shop-section">

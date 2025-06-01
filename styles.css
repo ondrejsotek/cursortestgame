@@ -16,7 +16,6 @@ body {
     margin: 0 auto;
     padding: 20px;
     min-height: 100vh;
-    cursor: pointer;
 }
 
 header {
@@ -65,11 +64,119 @@ h1, h2 {
     gap: 20px;
 }
 
-.buildings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px 0;
+.town-view {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 600px;
+    position: relative;
+    overflow: hidden;
+}
+
+.town-scene {
+    width: 100%;
+    height: 100%;
+    background-image: url('images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    position: relative;
+}
+
+.building {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated;
+    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.building:hover {
+    transform: scale(1.1);
+}
+
+.building.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    filter: grayscale(100%) drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+/* Building positions and images */
+.house {
+    bottom: 45%;
+    left: 15%;
+    background-image: url('images/house.png');
+}
+
+.farm {
+    bottom: 45%;
+    left: 45%;
+    background-image: url('images/farm.png');
+}
+
+.mine {
+    bottom: 45%;
+    right: 15%;
+    background-image: url('images/mine.png');
+}
+
+.factory {
+    bottom: 45%;
+    right: 35%;
+    background-image: url('images/factory.png');
+}
+
+.bank {
+    bottom: 45%;
+    left: 60%;
+    background-image: url('images/bank.png');
+}
+
+.tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    width: 200px;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.building:hover .tooltip {
+    display: block;
+}
+
+.tooltip h3 {
+    color: #ffffff;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+.tooltip .level,
+.tooltip .production,
+.tooltip .cost {
+    font-size: 0.9em;
+    margin-bottom: 3px;
+}
+
+.tooltip .production {
+    color: #2ecc71;
+}
+
+.tooltip .cost {
+    color: #e74c3c;
 }
 
 .shop-section {
@@ -78,7 +185,6 @@ h1, h2 {
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     height: fit-content;
-    cursor: default;
 }
 
 .shop-items {
@@ -134,163 +240,15 @@ h1, h2 {
     font-weight: bold;
 }
 
-.building {
-    background-color: #ffffff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, opacity 0.2s;
-    cursor: pointer;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.building.disabled {
-    cursor: not-allowed;
-    opacity: 0.7;
-    transform: none !important;
-}
-
-.building:not(.disabled):hover {
-    transform: translateY(-5px);
-}
-
-.building h2 {
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.building .level {
-    color: #7f8c8d;
-    margin-bottom: 10px;
-}
-
-.building .cost {
-    color: #e74c3c;
-    font-weight: bold;
-}
-
-.building .production {
-    color: #27ae60;
-    margin-bottom: 10px;
-}
-
-.building:not(.disabled):active {
-    transform: scale(0.98);
-}
-
-.building-icon {
-    width: 32px;
-    height: 32px;
-    margin: 0 auto 15px;
-    position: relative;
-}
-
-/* House icon */
-.building-icon.house::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    background-color: #95a5a6;
-    clip-path: polygon(50% 0%, 100% 50%, 100% 100%, 0% 100%, 0% 50%);
-}
-
-/* Farm icon */
-.building-icon.farm::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 24px;
-    height: 24px;
-    background: linear-gradient(45deg, #27ae60 25%, transparent 25%, transparent 75%, #27ae60 75%),
-                linear-gradient(-45deg, #27ae60 25%, transparent 25%, transparent 75%, #27ae60 75%);
-    background-size: 12px 12px;
-    border: 2px solid #2ecc71;
-}
-
-/* Mine icon */
-.building-icon.mine::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 24px;
-    height: 20px;
-    background-color: #34495e;
-    clip-path: polygon(0% 100%, 30% 0%, 70% 0%, 100% 100%);
-}
-
-/* Factory icon */
-.building-icon.factory {
-    position: relative;
-}
-
-.building-icon.factory::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 24px;
-    height: 24px;
-    background-color: #e74c3c;
-    clip-path: polygon(0% 40%, 30% 40%, 30% 0%, 70% 0%, 70% 40%, 100% 40%, 100% 100%, 0% 100%);
-}
-
-/* Bank icon */
-.building-icon.bank::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 28px;
-    height: 24px;
-    background-color: #f1c40f;
-    clip-path: polygon(0% 30%, 50% 0%, 100% 30%, 100% 100%, 0% 100%);
-}
-
-.building-icon.bank::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -20%);
-    width: 4px;
-    height: 12px;
-    background-color: #f39c12;
-    box-shadow: -6px 0 0 #f39c12, 6px 0 0 #f39c12;
-}
-
 @keyframes upgrade-flash {
     0% {
-        background-color: #ffffff;
+        filter: brightness(1);
     }
     50% {
-        background-color: #27ae60;
+        filter: brightness(1.5);
     }
     100% {
-        background-color: #ffffff;
-    }
-}
-
-@keyframes insufficient-funds {
-    0% {
-        background-color: #ffffff;
-    }
-    50% {
-        background-color: #e74c3c;
-    }
-    100% {
-        background-color: #ffffff;
+        filter: brightness(1);
     }
 }
 
