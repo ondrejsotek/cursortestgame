@@ -33,6 +33,10 @@ class Game {
         this.clickValue = 1;
         this.incomeProgress = 0;
         this.multiplier = 1.0;
+        this.upgradeTimer = null;
+        this.flowerPositions = [];
+        this.remainingFlowers = 0;
+        this.isGameOver = false;
         
         this.buildings = [
             new Building('House', 10, 1, 'house'),
@@ -51,15 +55,162 @@ class Game {
         ];
 
         this.lastUpdate = Date.now();
-        this.init();
+        this.loadFlowerPositions();
+    }
+
+    async loadFlowerPositions() {
+        try {
+            const response = await fetch('images/flower_positions.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const positions = await response.json();
+            if (!Array.isArray(positions)) {
+                throw new Error('Invalid flower positions data format');
+            }
+            this.flowerPositions = positions;
+            this.remainingFlowers = this.flowerPositions.length;
+            console.log(`Loaded ${this.remainingFlowers} flower positions`);
+            this.init();
+        } catch (error) {
+            console.error('Error loading flower positions:', error);
+            // Initialize with default values if loading fails
+            this.flowerPositions = [];
+            this.remainingFlowers = 100; // Default number of flowers
+            this.init();
+        }
     }
 
     init() {
         this.setupBuildingHandlers();
         this.createShopElements();
         this.updateDisplay();
+        this.createFlowerOverlay();
         
         setInterval(() => this.update(), 50);
+        this.startUpgradeCheck();
+    }
+
+    createFlowerOverlay() {
+        const townScene = document.querySelector('.town-scene');
+        if (!townScene) {
+            console.error('Town scene element not found');
+            return;
+        }
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'flower-overlay';
+        townScene.appendChild(overlay);
+        
+        // Add visual indicator for remaining flowers
+        const flowerCounter = document.createElement('div');
+        flowerCounter.className = 'flower-counter';
+        flowerCounter.textContent = `Flowers: ${this.remainingFlowers}`;
+        overlay.appendChild(flowerCounter);
+    }
+
+    startUpgradeCheck() {
+        const checkForUpgrade = () => {
+            if (this.isGameOver) return;
+
+            let canUpgradeAny = false;
+            this.buildings.forEach((building, index) => {
+                const cost = building.getCost();
+                if (this.gold >= cost) {
+                    canUpgradeAny = true;
+                }
+            });
+
+            if (canUpgradeAny) {
+                if (this.upgradeTimer === null) {
+                    this.upgradeTimer = setTimeout(() => {
+                        this.removeFlower();
+                        this.upgradeTimer = null;
+                        if (!this.isGameOver) {
+                            checkForUpgrade();
+                        }
+                    }, 5000);
+
+                    // Add warning animation to buildings that can be upgraded
+                    this.buildings.forEach((building, index) => {
+                        const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
+                        if (buildingElement && this.gold >= building.getCost()) {
+                            buildingElement.classList.add('warning');
+                        }
+                    });
+                }
+            } else if (this.upgradeTimer !== null) {
+                clearTimeout(this.upgradeTimer);
+                this.upgradeTimer = null;
+                // Remove warning animation
+                document.querySelectorAll('.building.warning').forEach(el => {
+                    el.classList.remove('warning');
+                });
+            }
+        };
+
+        // Start checking
+        setInterval(checkForUpgrade, 1000);
+    }
+
+    removeFlower() {
+        if (this.remainingFlowers <= 0) return;
+
+        const overlay = document.querySelector('.flower-overlay');
+        if (!overlay) return;
+
+        this.remainingFlowers--;
+        
+        // Update flower counter
+        const counter = overlay.querySelector('.flower-counter');
+        if (counter) {
+            counter.textContent = `Flowers: ${this.remainingFlowers}`;
+        }
+        
+        // Create withering flower effect
+        let flowerPos;
+        if (this.flowerPositions.length > 0) {
+            flowerPos = this.flowerPositions[this.remainingFlowers];
+        } else {
+            // Generate random position if no predefined positions
+            flowerPos = [
+                Math.random() * overlay.offsetWidth,
+                Math.random() * overlay.offsetHeight
+            ];
+        }
+        
+        const flower = document.createElement('div');
+        flower.className = 'withering-flower';
+        flower.style.left = `${flowerPos[0]}px`;
+        flower.style.top = `${flowerPos[1]}px`;
+        overlay.appendChild(flower);
+
+        // Animate and remove
+        setTimeout(() => {
+            flower.remove();
+        }, 1000);
+
+        if (this.remainingFlowers <= 0) {
+            this.gameOver();
+        }
+    }
+
+    gameOver() {
+        this.isGameOver = true;
+        clearTimeout(this.upgradeTimer);
+        this.upgradeTimer = null;
+
+        // Create game over overlay
+        const gameOverlay = document.createElement('div');
+        gameOverlay.className = 'game-over';
+        gameOverlay.innerHTML = `
+            <div class="game-over-content">
+                <h2>Game Over</h2>
+                <p>All flowers have withered away...</p>
+                <button onclick="location.reload()">Try Again</button>
+            </div>
+        `;
+        document.body.appendChild(gameOverlay);
     }
 
     collectGold() {
@@ -130,6 +281,8 @@ class Game {
     }
 
     upgradeBuilding(index) {
+        if (this.isGameOver) return;
+
         const building = this.buildings[index];
         const cost = building.getCost();
         
@@ -140,9 +293,16 @@ class Game {
             const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
             if (buildingElement) {
                 buildingElement.style.animation = 'upgrade-flash 0.5s';
+                buildingElement.classList.remove('warning');
                 setTimeout(() => {
                     buildingElement.style.animation = '';
                 }, 500);
+            }
+
+            // Reset upgrade timer
+            if (this.upgradeTimer !== null) {
+                clearTimeout(this.upgradeTimer);
+                this.upgradeTimer = null;
             }
             
             this.updateDisplay();

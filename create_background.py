@@ -5,6 +5,9 @@ def create_background():
     img = Image.new('RGBA', (256, 160), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
+    # Track flower positions
+    flower_positions = []
+    
     # Sky gradient (Ghibli-style soft sunset)
     for y in range(80):
         # Create a gradient from warm peach to soft blue
@@ -59,10 +62,9 @@ def create_background():
                         # Flower base
                         draw.point((fx, fy), fill=colors[(fx + fy) % len(colors)])
                         # Petals
-                        draw.point((fx-1, fy), fill=colors[(fx + fy) % len(colors)])
-                        draw.point((fx+1, fy), fill=colors[(fx + fy) % len(colors)])
-                        draw.point((fx, fy-1), fill=colors[(fx + fy) % len(colors)])
-                        draw.point((fx, fy+1), fill=colors[(fx + fy) % len(colors)])
+                        for px, py in [(fx-1, fy), (fx+1, fy), (fx, fy-1), (fx, fy+1)]:
+                            draw.point((px, py), fill=colors[(fx + fy) % len(colors)])
+                            flower_positions.append((px, py))
 
     # Trees (Ghibli-style)
     for x in range(20, 236, 60):
@@ -88,13 +90,23 @@ def create_background():
         draw.line([(x, y), (x+3, y-2)], fill=(80, 80, 80))
         draw.line([(x+3, y-2), (x+6, y)], fill=(80, 80, 80))
 
-    return img
+    return img, flower_positions
 
 def save_background():
-    img = create_background()
+    img, flower_positions = create_background()
     # Scale up the image to 1024x640 with nearest neighbor scaling for sharp pixels
     img_scaled = img.resize((1024, 640), Image.NEAREST)
     img_scaled.save('images/background.png')
+    
+    # Save flower positions scaled to match the resized image
+    scale_x = 1024 / 256
+    scale_y = 640 / 160
+    scaled_positions = [(int(x * scale_x), int(y * scale_y)) for x, y in flower_positions]
+    
+    # Save flower positions to a JSON file
+    import json
+    with open('images/flower_positions.json', 'w') as f:
+        json.dump(scaled_positions, f)
 
 if __name__ == '__main__':
     save_background() 

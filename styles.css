@@ -350,4 +350,119 @@ h1, h2 {
         transform: translateY(-50px);
         opacity: 0;
     }
+}
+
+.flower-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.withering-flower {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 200, 200, 0.8);
+    border-radius: 50%;
+    animation: wither 1s ease-out;
+}
+
+@keyframes wither {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+.building.warning {
+    animation: warning-pulse 1s ease-in-out infinite;
+}
+
+@keyframes warning-pulse {
+    0% {
+        filter: drop-shadow(2px 4px 6px rgba(255, 0, 0, 0.2));
+    }
+    50% {
+        filter: drop-shadow(2px 4px 6px rgba(255, 0, 0, 0.8));
+    }
+    100% {
+        filter: drop-shadow(2px 4px 6px rgba(255, 0, 0, 0.2));
+    }
+}
+
+.game-over {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fade-in 0.5s ease-out;
+}
+
+.game-over-content {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.game-over h2 {
+    color: #e74c3c;
+    margin-bottom: 1rem;
+}
+
+.game-over p {
+    color: #7f8c8d;
+    margin-bottom: 1.5rem;
+}
+
+.game-over button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.game-over button:hover {
+    background: #2980b9;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.flower-counter {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    color: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 3;
 } 
