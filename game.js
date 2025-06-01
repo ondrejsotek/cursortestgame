@@ -40,6 +40,8 @@ class Game {
         this.updateInterval = null;
         this.checkUpgradeInterval = null;
         this.isGameStarted = false;
+        this.score = 0;
+        this.lastUpdate = Date.now();
         
         this.buildings = [
             new Building('House', 10, 1, 'house'),
@@ -57,7 +59,6 @@ class Game {
             new ShopItem('Quantum Enhancement', 50000, 10.0, 'Quantum technology revolutionizes production', 'quantum')
         ];
 
-        this.lastUpdate = Date.now();
         this.showWelcomePopup();
     }
 
@@ -89,6 +90,7 @@ class Game {
                     <li>Losing all flowers will end the game</li>
                     <li>Buy items from the shop to increase your production multiplier</li>
                     <li>Use the pause button if you need a break</li>
+                    <li>Your score increases with each building upgrade!</li>
                 </ul>
             </div>
             <p>You have 10 flowers to protect:</p>
@@ -111,6 +113,7 @@ class Game {
 
     startGame() {
         this.isGameStarted = true;
+        this.lastUpdate = Date.now();
         this.init();
     }
 
@@ -189,7 +192,6 @@ class Game {
             pauseOverlay.classList.toggle('active', this.isPaused);
         }
 
-        // Handle timers
         if (this.isPaused) {
             // Store the remaining time on the upgrade timer if it exists
             if (this.upgradeTimer !== null) {
@@ -204,7 +206,13 @@ class Game {
             if (this.checkUpgradeInterval) {
                 clearInterval(this.checkUpgradeInterval);
             }
+            if (this.updateInterval) {
+                clearInterval(this.updateInterval);
+            }
         } else {
+            // Update the last update time to prevent gold accumulation during pause
+            this.lastUpdate = Date.now();
+            
             // Restore the upgrade timer if it was paused
             if (this.upgradeTimer && this.upgradeTimer.isPaused) {
                 const timeLeft = this.upgradeTimer.timeLeft;
@@ -218,6 +226,7 @@ class Game {
             }
             // Restart intervals
             this.startUpgradeCheck();
+            this.updateInterval = setInterval(() => this.update(), 50);
         }
     }
 
@@ -352,6 +361,7 @@ class Game {
             <div class="game-over-content">
                 <h2>Game Over</h2>
                 <p>All flowers have withered away...</p>
+                <p>Final Score: ${this.score} clicks</p>
                 <button onclick="location.reload()">Try Again</button>
             </div>
         `;
@@ -434,6 +444,7 @@ class Game {
         if (this.gold >= cost) {
             this.gold -= cost;
             building.level++;
+            this.score++; // Increment score for each successful upgrade
             
             const buildingElement = document.querySelector(`.building[data-type="${building.type}"]`);
             if (buildingElement) {
@@ -445,6 +456,9 @@ class Game {
                 if (countdownContainer) {
                     countdownContainer.remove();
                 }
+                
+                // Create score popup
+                this.showScorePopup(buildingElement, this.score);
                 
                 setTimeout(() => {
                     buildingElement.style.animation = '';
@@ -467,6 +481,24 @@ class Game {
         }
     }
 
+    showScorePopup(buildingElement, score) {
+        const popup = document.createElement('div');
+        popup.className = 'score-popup';
+        popup.textContent = `+1`;
+        
+        // Position the popup above the building
+        const rect = buildingElement.getBoundingClientRect();
+        popup.style.left = `${rect.left + rect.width / 2}px`;
+        popup.style.top = `${rect.top}px`;
+        
+        document.body.appendChild(popup);
+        
+        // Remove the popup after animation
+        setTimeout(() => {
+            popup.remove();
+        }, 1000);
+    }
+
     update() {
         if (this.isPaused || this.isGameOver || !this.isGameStarted) return;
 
@@ -487,6 +519,7 @@ class Game {
     updateDisplay() {
         document.getElementById('gold').textContent = Math.floor(this.gold);
         document.getElementById('multiplier').textContent = this.multiplier.toFixed(1);
+        document.getElementById('score').textContent = this.score;
         
         let totalIncome = 0;
         this.buildings.forEach(building => {
